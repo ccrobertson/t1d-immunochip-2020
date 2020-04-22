@@ -1,0 +1,20 @@
+convert_genome_studio_raw.sh
+check_additions_file.pl
+duplicate_snp_concordance.R
+sexqc2.sh [visualize_sexqc.R]
+relatedqc2.sh [
+	extract_ped_info.pl 
+	flag_child_swaps.pl 
+	flag_wrong_parents.pl
+	merge_parent_updates.pl	
+	between_family_swaps3.pl
+	decide_dup_family_to_drop.pl
+	update_phenofile_parents.pl
+	update_phenofile_ids.pl
+	update_phenofile_sex.pl
+	decide_dup_family_to_drop_between_cohort.pl
+	within_family_swaps3.pl
+]
+update_phenofile_sex.pl
+manual_swap_check.sh
+

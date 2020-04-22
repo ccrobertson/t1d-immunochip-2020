@@ -1,0 +1,74 @@
+#	Illumina SNP Manifest A and B files are located at:
+# 
+#	/h2/t74/cphgdesk/share/IMCHIP/GSL_SNP_Info/Immuno_BeadChip_11419691_Manifest_A.csv
+#	/h2/t74/cphgdesk/share/IMCHIP/GSL_SNP_Info/Immuno_BeadChip_11419691_Manifest_B.csv
+#
+
+#setup
+scripts=${PROJECT_MEGA}/scripts
+cd ${PROJECT_MEGA}/probe_alignment
+
+#download product info for array
+wget https://support.illumina.com/content/dam/illumina-support/documents/documentation/chemistry_documentation/infinium_assays/infinium-hd-ultra/11328087_RevB_Infinium_HD_Ultra_Assay_Guide_press.pdf
+
+#more info on probe design and allele/strand documentation
+https://support.illumina.com/bulletins/2017/06/how-to-interpret-dna-strand-and-allele-information-for-infinium-.html
+https://www.illumina.com/Documents/products/technotes/technote_iselect_design.pdf
+
+#retrieve manifests and quinlin maps
+cp ${PROJECT_MEGA}/raw_data/Immuno_BeadChip_11419691_Manifest_A.csv .
+cp ${PROJECT_MEGA}/raw_data/Immuno_BeadChip_11419691_Manifest_B.csv .
+cp ${PROJECT_MEGA}/raw_data/quinlin_mapInfo
+
+
+#make sure probe sequences are the same across manifests
+awk -v file=Immuno_BeadChip_11419691_Manifest_A.csv 'BEGIN {count=0; FS=","; while(getline<file){count++; if ($8=="") $8="none"; if (count>8) a[$2]=$6; b[$2]=$8}; print "Name","manifest_A_probeA", "manifest_B_probeA","manifest_A_probeB","manifest_B_probeB"} {if ($8=="") $8="none"; if (NR>8 && $2 in a) print $2, a[$2], $6, b[$2], $8; if (!$2 in a) print "PROBLEM"}' Immuno_BeadChip_11419691_Manifest_B.csv > probe_seq_by_manifest.txt
+wc -l probe_seq_by_manifest.txt
+awk '$2==$3 && $4==$5' probe_seq_by_manifest.txt > matching_variants.txt
+awk '$4!="none" {if (substr($2, 1, 49)!=substr($4, 1, 49)) print $0}' matching_variants.txt
+awk '$4!="none" {if (substr($2, 1, 49)==substr($4, 1, 49)) print $0}' matching_variants.txt
+
+#install blat
+cd ~/bin
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/blat/blat
+chmod +x blat 
+
+#convert manifest files to fasta format
+cd ${PROJECT_MEGA}/probe_alignment
+
+manifestToFasta () {
+	local file=$1
+	local nickname=$2
+	
+	#exclude QC variant ids ("Staining" "Extension" "Target Removal" "Hybridization" "Stringency" "Non-Specific" "Non-Polymorphic")
+	awk 'BEGIN {FS=","} {if ($2!~/Staining|Extension|Target|Hybridization|Stringency|Non-Specific|Non-Polymorphic/) {print}}' ${file} > ${nickname}_tmp
+	
+	#note: for each variant we check whether there is a probe sequence for
+	# ONLY allele A ==> Infinium II probe design ==> use all 50 bp of probe sequence for alignment
+	# BOTH allele A and allele B ==> Infinium I probe design ==> use only first 49 bp of sequence for alignment
+	
+	#create fasta for allele A probe sequences 
+	awk 'BEGIN {FS=","} NR>8 { if ($8!="") {print ">"$2,"\n"substr($6, 1, 49)} else {print ">"$2,"\n"$6}}'  ${nickname}_tmp > ${nickname}_alleleA.fa
+	
+	#create fasta for allele B probe sequences 
+	awk 'BEGIN {FS=","} NR>8 {if ($8!="") print ">"$2,"\n"substr($8, 1, 49)}'  ${nickname}_tmp > ${nickname}_alleleB.fa
+
+}
+manifestToFasta Immuno_BeadChip_11419691_Manifest_A.csv manifest_A
+
+
+
+#run blat to map probes to hg19
+sbatch ${scripts}/probe_alignment/map_probe_seq_to_hg19.slurm manifest_A_alleleA
+sbatch ${scripts}/probe_alignment/map_probe_seq_to_hg19.slurm manifest_A_alleleB
+
+
+#parse/filter blat output and map to SNP chromosome position
+module load anaconda/5.2.0-py3.6
+python ${scripts}/probe_alignment/map_probe_seq_to_b37_v2.py | sed "s/'//g" > mymapInfo
+
+#Do probe A and B always map to same position?
+#yes, because the only instances where they are unequal are when probe B is missing
+awk 'BEGIN {FS="\t"} $4!=$5 {print $5}' mymapInfo | sort | uniq -c
+
+
