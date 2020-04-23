@@ -37,6 +37,7 @@ For questions, please contact the pipeline authors: Jamie Inshaw & Cassie Robert
 
 # Fine-mapping and enrichment analysis
 * Fine-mapping of T1D regions with GUESSFM (using EUR only) and PAINTOR (using all ancestry groups) (see fine_mapping/README.md)
+* Haplotype analysis (Jamie please add info)
 * Enrichment for credible variants in ATAC-seq peaks (Jamie please add info)
 
 
