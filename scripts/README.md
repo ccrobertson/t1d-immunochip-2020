@@ -51,16 +51,3 @@ For questions, please contact the pipeline authors: Jamie Inshaw & Cassie Robert
 * Define ichip and dense regions (Jamie please add info)
 * Variant annotation (see annotation/README.md)
 * Cohort summary tables (see manuscript/summary_tables.R)
-
-
-
-
-
-
-
-scripts/fine_mapping/README.md
-scripts/imputation_accuracy_coverage/README.md
-scripts/inflation_analysis/README.md
-scripts/pca/README.md
-scripts/post_imputation/README.md
-scripts/pre_imputation/README.md
