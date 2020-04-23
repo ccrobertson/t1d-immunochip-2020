@@ -5,12 +5,14 @@ As standard, the directory will contain the following figures:
 3)	GUESSFM output, named “init_out_genes_upd.png “. The fourth panel shows the linkage disequilibrium between GUESSM prioritised variants. The third panel shows the GUESSFM prioritised variants, coloured by group (these colours match those in the haplotype analysis), the dots are the variant posterior probability and the shaded region shows the group posterior probability. The second panel maps the location of the variants in the third panel to their position in the genome. The first panel shows the location of any protein coding genes in the region (genome build 38).
 
 In four directories, there are five figures, where there is evidence of a ‘tag’ variant, which has a strong univariable association statistic due to being in linkage disequilibrium with two or more disease associated variants, but does not appear to be disease associated when present in isolation without the disease-associated variants. These figures are called the same as the haplotype analysis name, but with”_inc_tag” at the end. The following directories contain five figure and therefore have evidence of a tag variant:
+
 - CTLA4
 - IL2/IL21
 - MEG3
 - UBASH3A
 
 In three directories, there are three figures. These are regions where there are no groups with posterior probability >0.8 and therefore no haplotype analysis:
+
 - RASGRP1
 - IRF4
 - RPAP2
