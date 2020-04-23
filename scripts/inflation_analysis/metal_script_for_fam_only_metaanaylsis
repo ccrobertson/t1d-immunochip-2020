@@ -1,0 +1,24 @@
+#metal_script_for_fam_only_metaanaylsis
+
+#THIS SCRIPT EXECUTES AN ANALYSIS OF THE FAMILY GROUPS
+
+#LOAD THE INPUT FILES
+
+# === DESCRIBE AND PROCESS THE FIRST INPUT FILE ===
+MARKER SNP
+ALLELE RefAllele NonRefAllele
+EFFECT BETA
+STDERR SE
+SCHEME STDERR
+PROCESS meta_file_fam_EAS_newqc_1.tbl
+
+#All files are of the same format so can process immediately:
+PROCESS meta_file_fam_AFR_newqc_1.tbl
+PROCESS meta_file_fam_EUR_newqc_1.tbl
+PROCESS meta_file_fam_AMR_newqc_1.tbl
+PROCESS meta_file_fam_FIN_newqc_1.tbl
+
+#OUTFILE METAANALYSIS_fam_only_vcf_newqc_1
+ANALYZE
+
+QUIT
