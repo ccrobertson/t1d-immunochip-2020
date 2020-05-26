@@ -37,8 +37,8 @@ For questions, please contact the pipeline authors: Jamie Inshaw & Cassie Robert
 
 # Fine-mapping and enrichment analysis
 * Fine-mapping of T1D regions with GUESSFM (using EUR only) and PAINTOR (using all ancestry groups) (see fine_mapping/README.md)
-* Haplotype analysis (Jamie please add info)
-* Enrichment for credible variants in ATAC-seq peaks (Jamie please add info)
+* Haplotype analysis (see fine_mapping/README_haplotypes.md)
+* Enrichment for credible variants in ATAC-seq peaks (see fine_mapping/README_atac.md)
 
 
 # QTL analyses
@@ -48,6 +48,7 @@ For questions, please contact the pipeline authors: Jamie Inshaw & Cassie Robert
 
 
 # Other analyses
-* Define ichip and dense regions (Jamie please add info)
+* Define ichip and dense regions (see assoc_case_control/README.md)
 * Variant annotation (see annotation/README.md)
 * Cohort summary tables (see manuscript/summary_tables.R)
+* Priority index analyis (see pi/README.md)

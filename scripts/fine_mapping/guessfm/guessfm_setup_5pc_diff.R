@@ -114,7 +114,10 @@ DATA<-DATA[all$ID,]
 message("Removing poorly imputed SNPs.")
 message("Input matrix has ",ncol(DATA)," SNPs.")
 cs <- col.summary(DATA)
+if(index!="chr5:56146422:T:C")
 wh <- which(cs[,"MAF"]<0.005 | cs[,"Call.rate"]<0.99 | cs[,"Certain.calls"]<0.75 | abs(cs[,"z.HWE"])>20 | is.na(cs[,"z.HWE"]))
+if(index=="chr5:56146422:T:C")	#exception at IL6ST/ANKRD55 so variant rs7731626 included in the stoachstic search.
+wh <- which(cs[,"MAF"]<0.005 | cs[,"Call.rate"]<0.99 | cs[,"Certain.calls"]<0.5 | abs(cs[,"z.HWE"])>20 | is.na(cs[,"z.HWE"]))
 if(length(wh)) {
   message("Dropping ",length(wh)," SNPs with |z.HWE|>20, MAF < 0.005 or call rate <0.99")
   DATA <- DATA[,-wh]
