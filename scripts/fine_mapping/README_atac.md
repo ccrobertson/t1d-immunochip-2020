@@ -11,7 +11,7 @@ NOTE: this is also used in the ./guessfm/ analysis to find variants dropped due 
 ```
 2) ./atac/ld_overall_newb_genedens_isletup_incld.R
 ```
-Performs enrichment analysis: are more T1D credible variants in open chromatin in each cell type relative to what would be expected by chance.
+Performs enrichment analysis: are more T1D credible variants in open chromatin in each cell type relative to what would be expected by chance. Produces supplementary figure in manuscript.
 
 
 ```
@@ -19,4 +19,4 @@ Performs enrichment analysis: are more T1D credible variants in open chromatin i
 
 ```
 Performs enrichment analysis: are more T1D credible variants in ATAC-seq peaks in differentially-open peaks after stimulation or differentially-open peaks under resting conditions, than expected by chance.
-It first identifies differentially-open peaks under resting and stimulated conditions, then carries out the enrichment analysis.
+It first identifies differentially-open peaks under resting and stimulated conditions, then carries out the enrichment analysis. Produces supplementary figure & table in manuscript.
