@@ -12,6 +12,7 @@ Generate region VCFs only for hits in iChip regions, as agreed with Cassie and r
 2) ./guessfm/guessfm_readin_script_gen.R 
 ```
 Generates and submits batch scripts to run guessfm_readin_5pc_diff.R at each locus. This reads in the GUESS stochastic search and does the post-processing analysis to generate 'credible variants'.
+Also requires GUESS to be installed from http://www.bgx.org.uk/software/guess.html
 
 ```
 3) ./guessfm/guessfm_sum_5pc_diff.R
