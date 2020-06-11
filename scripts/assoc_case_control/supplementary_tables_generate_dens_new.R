@@ -310,6 +310,16 @@ write.table(fi, file=paste0(outputdir,"/summaries/all_univariable_dens.txt"),
 sep=",",col.names=T,row.names=F, quote=F)
 save(final, fi, file=paste0(outputdir,"/summaries/robs.RData"))
 
+fiout<-fi[,c("MarkerName","ichipreg","chromosome","position","ID","alleleA","alleleB",
+"Effect_EUR","SE_EUR","AF_EUR",
+"EffectphaseIandII",
+"SEphaseIandII",
+"pphaseIandII")]
+write.table(fiout, file=paste0(outputdir,"/summaries/all_univariable_dens_biorxiv.txt"),
+sep=",",col.names=T,row.names=F, quote=F)
+
+
+
 #####################
 #2) Univariable hits#
 #####################
