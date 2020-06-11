@@ -25,6 +25,8 @@ runQTLScan = function(dat_sub, outfile_cis, outfile_trans, pvOutputThreshold_cis
   genodat = dat_sub[["dosages"]]
   countMat = dat_sub[["counts"]]
   sampleDF = data.frame(dat_sub[["samples"]], dat_sub[["pheno"]], dat_sub[["peer"]])
+  sampleDF$selection = sampleDF$SQB %in% c("ATAC_UF_SQB101", "ATAC_UF_SQB102", "ATAC_UF_SQB103", "ATAC_UF_SQB104", "ATAC_UF_SQB105", "ATAC_UF_SQB106")
+
 
 	#set up input matrices
 	X = t(genodat)
@@ -88,8 +90,8 @@ pdf("caqtl_scan_cis.pdf")
 #runQTLScan(dat_un_EUR, outfile_cis="caqtl_scan_unstim_cis_EUR.txt", outfile_trans=NULL, pvOutputThreshold_cis=0.05, pvOutputThreshold_trans=0, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", paste0("PF",seq(2,10))))
 #runQTLScan(dat_un_AFR, outfile_cis="caqtl_scan_unstim_cis_AFR.txt", outfile_trans=NULL, pvOutputThreshold_cis=0.05, pvOutputThreshold_trans=0, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", paste0("PF",seq(2,10))))
 
-runQTLScan(dat_un_EUR, outfile_cis="caqtl_scan_unstim_cis_EUR.txt", outfile_trans=NULL, pvOutputThreshold_cis=0.05, pvOutputThreshold_trans=0, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score"))
-runQTLScan(dat_un_AFR, outfile_cis="caqtl_scan_unstim_cis_AFR.txt", outfile_trans=NULL, pvOutputThreshold_cis=0.05, pvOutputThreshold_trans=0, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score"))
+runQTLScan(dat_un_EUR, outfile_cis="caqtl_scan_unstim_cis_EUR.txt", outfile_trans=NULL, pvOutputThreshold_cis=0.05, pvOutputThreshold_trans=0, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score", "selection"))
+runQTLScan(dat_un_AFR, outfile_cis="caqtl_scan_unstim_cis_AFR.txt", outfile_trans=NULL, pvOutputThreshold_cis=0.05, pvOutputThreshold_trans=0, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score", "selection"))
 dev.off()
 
 #trans-eQTLs

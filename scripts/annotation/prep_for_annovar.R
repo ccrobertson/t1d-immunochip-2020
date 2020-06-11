@@ -1,5 +1,5 @@
 #install.packages("bedr")
-#library(bedr)
+library(bedr)
 #module load htslib
 
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

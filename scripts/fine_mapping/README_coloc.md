@@ -16,8 +16,11 @@ Calculate allelic imbalance at colocalized caQTLs
 	cp rs705704/rs705704_HOMALT.txt rs705705/rs705705_HOMALT.txt
 	```
 
-Create colocalisation table
-	```bash
-	Rscript ${scripts}/fine_mapping/merge_coloc_ecaviar_results.R
-	```
-
+How many credible variants in peaks were genotyped on ImmunoChip?
+```bash
+awk '$2=="rs7731626"' ${data}/mega_release4_filtered_for_hwe.bim
+awk '$2=="rs72928038"' ${data}/mega_release4_filtered_for_hwe.bim
+awk '$2=="rs9388486"' ${data}/mega_release4_filtered_for_hwe.bim
+awk '$2=="rs705704" || $2=="rs705705"' ${data}/mega_release4_filtered_for_hwe.bim
+awk '$2=="rs11628807" || $2=="rs4383076" || $2=="rs11628876" || $2=="rs11160429"' ${data}/mega_release4_filtered_for_hwe.bim
+```

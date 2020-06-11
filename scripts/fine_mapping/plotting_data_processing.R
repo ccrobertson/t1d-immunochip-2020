@@ -2,16 +2,6 @@ setwd(Sys.getenv('finemap'))
 pubdir = Sys.getenv('PUBLIC_DATA')
 #source()
 
-##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Credible set data
-##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-finemap = read.table("credible_sets_with_proxies_from_Jamie_ANNOTATED.txt", header=TRUE, comment.char="~", sep="\t")
-finemap$chr = paste0("chr", finemap$chromosome)
-finemap$MarkerID = finemap$ID
-finemap$MarkerID[finemap$MarkerID=="."] <- finemap$MarkerName[finemap$MarkerID=="."]
-finemap$include_line=(finemap$ppsum>0.8 & finemap$credset_size<=5)
-saveRDS(finemap, file="annotated_credible_sets.rds")
-
 
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## EncodeRoadmap data

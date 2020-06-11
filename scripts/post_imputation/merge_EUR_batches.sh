@@ -55,10 +55,10 @@ findAndMerge () {
 #done
 #wait
 
-findAndMerge "4"  > ${outdir}/findAndMerge_chr4_2.log 2>&1
-findAndMerge "5"  > ${outdir}/findAndMerge_chr5_2.log 2>&1
-findAndMerge "9"  > ${outdir}/findAndMerge_chr9_2.log 2>&1
-findAndMerge "12"  > ${outdir}/findAndMerge_chr12_2.log 2>&1
+findAndMerge "4"  > ${outdir}/findAndMerge_chr4_3.log 2>&1
+findAndMerge "5"  > ${outdir}/findAndMerge_chr5_3.log 2>&1
+findAndMerge "9"  > ${outdir}/findAndMerge_chr9_3.log 2>&1
+findAndMerge "12"  > ${outdir}/findAndMerge_chr12_3.log 2>&1
 wait
 
 echo "DONE"

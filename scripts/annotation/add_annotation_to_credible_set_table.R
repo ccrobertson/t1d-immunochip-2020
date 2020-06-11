@@ -52,7 +52,7 @@ OUTTABLE_all = datnew_ordered[,fields]
 OUTTABLE_protein_altering = OUTTABLE_all[OUTTABLE_all$ppsum>0.5 & (OUTTABLE_all$ExonicFunc.refGene %in% c("stopgain","nonsynonymous SNV","frameshift substitution") | OUTTABLE_all$Func.refGene=="splicing" | OUTTABLE_all$ExonicFunc.ensGene %in% c("stopgain","nonsynonymous SNV","frameshift substitution") | OUTTABLE_all$Func.ensGene=="splicing"), ]
 OUTTABLE_top_candidates = OUTTABLE_protein_altering[!is.na(OUTTABLE_protein_altering$pp) & OUTTABLE_protein_altering$pp>0.1,]
 
-### Save to files
+### Save to files (Supplementary Tables 11 & 13)
 write.table(OUTTABLE_all, file="credible_sets_with_proxies_from_Jamie_ANNOTATED.txt", sep="\t", col.names=TRUE, row.names=FALSE, quote=FALSE)
 write.table(OUTTABLE_protein_altering, file="credible_sets_with_proxies_from_Jamie_ANNOTATED_protein_altering.txt", sep="\t", col.names=TRUE, row.names=FALSE, quote=FALSE)
 write.table(OUTTABLE_top_candidates, file="credible_sets_with_proxies_from_Jamie_ANNOTATED_protein_altering_top_candidates.txt", sep="\t", col.names=TRUE, row.names=FALSE, quote=FALSE)
@@ -60,3 +60,14 @@ write.table(OUTTABLE_top_candidates, file="credible_sets_with_proxies_from_Jamie
 #rsync -v $rivanna:/nv/vol185/MEGA/release4/IMPUTED_TOPMED/fine_mapping/credible_sets_with_proxies_from_Jamie_ANNOTATED.txt .
 #rsync -v $rivanna:/nv/vol185/MEGA/release4/IMPUTED_TOPMED/fine_mapping/credible_sets_with_proxies_from_Jamie_ANNOTATED_protein_altering.txt .
 #rsync -v $rivanna:/nv/vol185/MEGA/release4/IMPUTED_TOPMED/fine_mapping/credible_sets_with_proxies_from_Jamie_ANNOTATED_protein_altering_top_candidates.txt .
+
+
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## save credible set rds object for later use
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+finemap = read.table("credible_sets_with_proxies_from_Jamie_ANNOTATED.txt", header=TRUE, comment.char="~", sep="\t")
+finemap$chr = paste0("chr", finemap$chromosome)
+finemap$MarkerID = finemap$ID
+finemap$MarkerID[finemap$MarkerID=="."] <- finemap$MarkerName[finemap$MarkerID=="."]
+finemap$include_line=(finemap$ppsum>0.8 & finemap$credset_size<=5)
+saveRDS(finemap, file="annotated_credible_sets.rds")

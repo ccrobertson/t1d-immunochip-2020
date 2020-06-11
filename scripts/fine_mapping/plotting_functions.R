@@ -86,7 +86,7 @@ getAtacPlot = function(dat_reg, region, title=NULL) {
   ggplot(dat_reg) + geom_rect(aes(xmin=start, xmax=end, ymin=0, ymax=score, fill=plotCat)) +
     scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0), breaks=chrpos_ticks_breaks, labels=chrpos_ticks_labels) +
     #scale_y_continuous(limits = c(0, 1.25*max(dat_reg$score)), expand = c(0,0)) +
-    scale_fill_manual(values=atac_cell_categories_colors) +
+    scale_fill_manual(values=atac_cell_categories_colors[atac_cell_categories_ordered %in% unique(dat_reg$plotCat)]) +
     facet_grid(plotType~., margins=FALSE, switch="y") +
     ggtitle(title) +
     theme(

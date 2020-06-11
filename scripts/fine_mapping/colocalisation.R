@@ -157,119 +157,13 @@ getColocDat = function(index_gwas, index_qtl, dat_qtl, results_qtl) {
   coloc.res <- coloc.abf(p12=5e-6, dataset1=list(N=33601, beta=combdat$beta.pheno, varbeta=combdat$varbeta.pheno, type="cc", s=0.5, snp=combdat$rsid),
                       dataset2=list(N=nrow(dat_qtl[["samples"]]), beta=combdat$beta.qtl, varbeta=combdat$varbeta.qtl, type="quant", snp=combdat$rsid, sdY=sd(dat_qtl[["counts"]][combdat$peak[1],])))
   sorted_results = coloc.res$results[order(coloc.res$results$SNP.PP.H4, decreasing=TRUE),]
-  return(list(index_gwas=index_gwas, index_qtl=index_qtl, coloc_summary = coloc.res$summary, coloc_results = sorted_results, coloc_input = combdat))
+  return(list(index_gwas=index_gwas, index_qtl=index_qtl, coloc_summary = coloc.res$summary, coloc_results = sorted_results, coloc_input = combdat, feature=res_qtl$peak[1]))
 
 }
-
-getLCPlot = function(coloc_out, group) {
-
-  index_gwas = coloc_out[["index_gwas"]]
-  index_qtl = coloc_out[["index_qtl"]]
-  combdat = coloc_out[["coloc_input"]]
-  label = paste0(index_gwas,"__",index_qtl,"__",group)
-  cat(label,"\n")
-
-  #create lcformat files
-  if (!dir.exists("locuscompare")) {dir.create("locuscompare")}
-  gwas_fn = paste0("locuscompare/lcformat_",label,"_gwas.txt")
-  gwas_d = combdat[,c("rsid","pval.pheno")]
-  names(gwas_d) <- c("rsid","pval")
-  #cat("GWAS:",class(gwas_d),"\n")
-  write.table(gwas_d, file=gwas_fn, col.names=TRUE, row.names=FALSE, quote=FALSE)
-
-  qtl_fn = paste0("locuscompare/lcformat_",label,"_qtl.txt")
-  qtl_d = combdat[,c("rsid","pval.qtl")]
-  names(qtl_d) <- c("rsid","pval")
-  #cat("QTL:",class(qtl_d),"\n")
-  write.table(qtl_d, file=qtl_fn, col.names=TRUE, row.names=FALSE, quote=FALSE)
-
-  #run locuscompare
-  png(paste0("locuscompare/locuscompare_chromqtls_",label,".png"), width = 860, height = 480)
-  p = locuscompare(in_fn1 = gwas_fn, in_fn2 = qtl_fn, title = 'GWAS', title2 = 'caQTL')
-  print(p)
-  dev.off()
-
-}
-
-getPeakObject = function(peak) {
-  vals = strsplit(peak, split="_")[[1]]
-  out = list(label=peak, chr=vals[[1]], start=as.numeric(vals[[2]]), end=as.numeric(vals[[3]]))
-  out[["prettyLabel"]] = paste0(out$chr, ":",out$start,"-",out$end)
-  return(out)
-}
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Run colocalisation
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-### Due to lack of power in EUR only analysis we did the following:
-# 1. defined index variants based on conditional analysis in EUR and AFR analyzed jointly (adjusting for global PCs projected onto 1000G)
-#       - only 2/10 regions in this analysis had secondary signals at p<1e-3 (chr16_28914657_T_C and chr2_203687587_T_C)
-# 2. for each of the 12 index variants found in (1), we fit EUR-specific models adjusting for EUR-specific PCs and conditioning on other index SNPs in the region (only for two regions with secondary signals)
-# 3. for each index variant in LD with a GUESSFM index variant (rsq>0.5 in caQTL EUR data set), we formally tested for colocalisation using EUR-specifc caQTL stats or pooled AFR and EUR caQTL stats
-
-index_pairs_un = getIndexPairs(gwas_index_variants=t1d_index_variants, qtl_index_variants=names(results_qtl_un), ld_dat=dat_un_EUR, threshold=0.25)
-#index_pairs_un_all = getIndexPairs(gwas_index_variants=t1d_index_variants, qtl_index_variants=names(results_qtl_un), ld_dat=dat_un, threshold=0.25)
-
-coloc_out_un = apply(index_pairs_un, 1, function(x) {getColocDat(index_gwas = x["snp1"], index_qtl = x["snp2"], dat_qtl = dat_un, results_qtl = results_qtl_un)} )
-lapply(coloc_out_un, getLCPlot, group="un")
-
-coloc_out_EUR = apply(index_pairs_un, 1, function(x) {getColocDat(index_gwas = x["snp1"], index_qtl = x["snp2"], dat_qtl = dat_un_EUR, results_qtl = results_qtl_EUR)} )
-lapply(coloc_out_EUR, getLCPlot, group="EUR")
-
-index_pairs_AFR = getIndexPairs(gwas_index_variants=t1d_index_variants, qtl_index_variants=names(results_qtl_AFR), ld_dat=dat_un_AFR)
-# coloc_out_AFR = apply(index_pairs_AFR, 1, function(x) {getColocDat(index_gwas = x["snp1"], index_qtl = x["snp2"], dat_qtl = dat_un_AFR, results_qtl = results_qtl_AFR)} )
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Whole Blood eQTLs
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library("liftOver")
-chain_hg19_to_hg38 = import.chain(con=paste0(Sys.getenv("resources"),"/hg19ToHg38.over.chain"))
-
-# wb_eqtl = read.table("wholeblood_eQTL/cis-eQTLs_significant_FDR_lt_0.001.txt", header=TRUE)
-# saveRDS(wb_eqtl, file="wholeblood_eQTL/cis-eQTLs_significant_FDR_lt_0.001.rds")
-wb_eqtl = readRDS(file=file.path(Sys.getenv("qtl"),"wholeblood_eQTL/cis-eQTLs_significant_FDR_lt_0.001.rds"))
-
-#extract regions
-# if (exists("cis-eQTLs_significant_FDR_lt_0.001_coloc_index_vars.rds")) {
-#
-#   wb_eqtl_overlap = readRDS(file="cis-eQTLs_significant_FDR_lt_0.001_coloc_index_vars.rds")
-#
-# } else {
-#
-  credible_vars = unlist(strsplit(finemap[finemap$tag_rsid %in% index_pairs_un$rsid1, "rsid_merged"], split=";"))
-  wb_eqtl_overlap = wb_eqtl[wb_eqtl$SNP %in% credible_vars,]
-  saveRDS(wb_eqtl_overlap, file="cis-eQTLs_significant_FDR_lt_0.001_coloc_index_vars.rds")
-
-# }
-
-extractEqtlData = function(gene) {
-  cat("extracting eQTL statistics for",gene,"\n")
-  command = paste("sbatch",paste0("--output=extract_eqtl_results_by_gene_",gene,".log"),paste0(Sys.getenv("scripts"),"/fine_mapping/extract_eqtl_results_by_gene.slurm"), gene)
-  cat(command,"\n")
-  system(command)
-}
-
-genes = unique(wb_eqtl_overlap$GeneSymbol)
-for ( i in 1:length(genes)) {
-  genefile = paste0(Sys.getenv("PUBLIC_DATA"),"/eQTLGen/cis-eQTLs_full_20180905__",genes[i],".txt")
-  if (!file.exists(genefile)) {
-    cat("creating", genefile,"\n")
-    extractEqtlData(genes[i])
-  }
-}
-
-matchIndexToGenes = function(index_gwas) {
-  cred_vars = unlist(strsplit(finemap[finemap$tag==index_gwas,"rsid_merged"], split=";"))
-  unique(wb_eqtl_overlap[wb_eqtl_overlap$SNP%in%cred_vars,"GeneSymbol"])
-}
-matchIndexToGenes("chr12:56047884:TA:T")
-
 
 getEQTL_ColocDat = function(index_gwas, gene) {
 
-  #get gwas suummary stats
+  #get gwas summary stats
   if (getRsid(index_gwas) %in% cond_files) {
     res_gwas = read.table(paste0(cond_dir,"/",getRsid(index_gwas)), comment.char="#", header=TRUE, sep="")
     res_gwas$MarkerName = res_gwas$rsid
@@ -330,6 +224,7 @@ getEQTL_ColocDat = function(index_gwas, gene) {
 
   #combine
   combdat = merge(res_gwas, res_qtl, by.x="MarkerName", by.y="MarkerName_new", suffixes=c(".pheno",".qtl"))
+  combdat$rsid = combdat$rsid.pheno
   #combdat = combdat[!is.na(combdat$rsid.pheno),]
 
   #run coloc
@@ -339,12 +234,113 @@ getEQTL_ColocDat = function(index_gwas, gene) {
                   dataset2=list(N=combdat$NrSamples, zs=combdat$zscore.qtl, type="quant", snp=combdat$rsid.pheno, MAF=combdat$AF))
   sorted_results = coloc.res$results[order(coloc.res$results$SNP.PP.H4, decreasing=TRUE),]
 
-  return(list(index_gwas=index_gwas, coloc_summary = coloc.res$summary, coloc_results = sorted_results, coloc_input = combdat))
+  return(list(index_gwas=index_gwas, coloc_summary = coloc.res$summary, coloc_results = sorted_results, coloc_input = combdat, feature=gene))
   #return(list(index_gwas=index_gwas, res_gwas, res_qtl, combdat2))
   #return(list(index_gwas=index_gwas, res_gwas, res_qtl, combdat))
 
 }
 #getEQTL_ColocDat(index_gwas="chr6:90267049:G:A", gene="BACH2")
+
+getLCPlot = function(coloc_out_obj, group, ylab=NULL) {
+
+  index_gwas = coloc_out_obj[["index_gwas"]]
+  #index_qtl = coloc_out_obj[["index_qtl"]]
+  feature = coloc_out_obj[["feature"]]
+  combdat = coloc_out_obj[["coloc_input"]]
+  label = gsub(":","_",paste0(index_gwas,"__",feature,"__",group))
+  cat(label,"\n")
+
+  #create lcformat files
+  if (!dir.exists("locuscompare")) {dir.create("locuscompare")}
+  gwas_fn = paste0("locuscompare/lcformat_",label,"_gwas.txt")
+  gwas_d = combdat[,c("rsid","pval.pheno")]
+  names(gwas_d) <- c("rsid","pval")
+  #cat("GWAS:",class(gwas_d),"\n")
+  write.table(gwas_d, file=gwas_fn, col.names=TRUE, row.names=FALSE, quote=FALSE)
+
+  qtl_fn = paste0("locuscompare/lcformat_",label,"_qtl.txt")
+  qtl_d = combdat[,c("rsid","pval.qtl")]
+  names(qtl_d) <- c("rsid","pval")
+  #cat("QTL:",class(qtl_d),"\n")
+  write.table(qtl_d, file=qtl_fn, col.names=TRUE, row.names=FALSE, quote=FALSE)
+
+  #run locuscompare
+  png(paste0("locuscompare/locuscompare_chromqtls_",label,".png"), width = 860, height = 480)
+  p = locuscompare(in_fn1 = gwas_fn, in_fn2 = qtl_fn, title = 'GWAS', title2 = ylab)
+  print(p)
+  dev.off()
+
+}
+
+getPeakObject = function(peak) {
+  vals = strsplit(peak, split="_")[[1]]
+  out = list(label=peak, chr=vals[[1]], start=as.numeric(vals[[2]]), end=as.numeric(vals[[3]]))
+  out[["prettyLabel"]] = paste0(out$chr, ":",out$start,"-",out$end)
+  return(out)
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Run colocalisation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Due to lack of power in EUR only analysis we did the following:
+# 1. defined index variants based on conditional analysis in EUR and AFR analyzed jointly (adjusting for global PCs projected onto 1000G)
+#       - only 2/10 regions in this analysis had secondary signals at p<1e-3 (chr16_28914657_T_C and chr2_203687587_T_C)
+# 2. for each of the 12 index variants found in (1), we fit EUR-specific models adjusting for EUR-specific PCs and conditioning on other index SNPs in the region (only for two regions with secondary signals)
+# 3. for each index variant in LD with a GUESSFM index variant (rsq>0.5 in caQTL EUR data set), we formally tested for colocalisation using EUR-specifc caQTL stats or pooled AFR and EUR caQTL stats
+
+index_pairs_un = getIndexPairs(gwas_index_variants=t1d_index_variants, qtl_index_variants=names(results_qtl_un), ld_dat=dat_un_EUR, threshold=0.25)
+#index_pairs_un_all = getIndexPairs(gwas_index_variants=t1d_index_variants, qtl_index_variants=names(results_qtl_un), ld_dat=dat_un, threshold=0.25)
+
+coloc_out_un = apply(index_pairs_un, 1, function(x) {getColocDat(index_gwas = x["snp1"], index_qtl = x["snp2"], dat_qtl = dat_un, results_qtl = results_qtl_un)} )
+lapply(coloc_out_un, getLCPlot, group="un", ylab="caQTL")
+
+coloc_out_EUR = apply(index_pairs_un, 1, function(x) {getColocDat(index_gwas = x["snp1"], index_qtl = x["snp2"], dat_qtl = dat_un_EUR, results_qtl = results_qtl_EUR)} )
+lapply(coloc_out_EUR, getLCPlot, group="EUR", ylab="caQTL")
+
+index_pairs_AFR = getIndexPairs(gwas_index_variants=t1d_index_variants, qtl_index_variants=names(results_qtl_AFR), ld_dat=dat_un_AFR)
+# coloc_out_AFR = apply(index_pairs_AFR, 1, function(x) {getColocDat(index_gwas = x["snp1"], index_qtl = x["snp2"], dat_qtl = dat_un_AFR, results_qtl = results_qtl_AFR)} )
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Prep whole Blood eQTL data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library("liftOver")
+chain_hg19_to_hg38 = import.chain(con=paste0(Sys.getenv("resources"),"/hg19ToHg38.over.chain"))
+
+#read in genome-wide significant eqtls
+wb_eqtl = readRDS(file=file.path(Sys.getenv("qtl"),"wholeblood_eQTL/cis-eQTLs_significant_FDR_lt_0.001.rds"))
+credible_vars = unlist(strsplit(finemap[finemap$tag_rsid %in% index_pairs_un$rsid1, "rsid_merged"], split=";"))
+
+#get significant eqtls overlapping T1D credible regions
+wb_eqtl_overlap = wb_eqtl[wb_eqtl$SNP %in% credible_vars,]
+saveRDS(wb_eqtl_overlap, file="cis-eQTLs_significant_FDR_lt_0.001_coloc_index_vars.rds")
+
+#extract complete eqtl summary stats for each region
+extractEqtlData = function(gene) {
+  cat("extracting eQTL statistics for",gene,"\n")
+  command = paste("sbatch",paste0("--output=extract_eqtl_results_by_gene_",gene,".log"),paste0(Sys.getenv("scripts"),"/fine_mapping/extract_eqtl_results_by_gene.slurm"), gene)
+  cat(command,"\n")
+  system(command)
+}
+genes = unique(wb_eqtl_overlap$GeneSymbol)
+for ( i in 1:length(genes)) {
+  genefile = paste0(Sys.getenv("PUBLIC_DATA"),"/eQTLGen/cis-eQTLs_full_20180905__",genes[i],".txt")
+  if (!file.exists(genefile)) {
+    cat("creating", genefile,"\n")
+    extractEqtlData(genes[i])
+  }
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Whole Blood eQTL colocalisation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+matchIndexToGenes = function(index_gwas) {
+  cred_vars = unlist(strsplit(finemap[finemap$tag==index_gwas,"rsid_merged"], split=";"))
+  unique(wb_eqtl_overlap[wb_eqtl_overlap$SNP%in%cred_vars,"GeneSymbol"])
+}
+matchIndexToGenes("chr12:56047884:TA:T")
 
 runEQTL = function(index) {
   genes = matchIndexToGenes(index)
@@ -358,14 +354,15 @@ runEQTL = function(index) {
   return(results)
 }
 
-#if (exists("eqtl_colocalisation_stats.rds")) {
-#  coloc_eqtl_out = readRDS(file="eqtl_colocalisation_stats.rds")
-#} else {
-  coloc_eqtl_out = lapply(gsub("_",":",index_pairs_un$snp1), runEQTL)
-  names(coloc_eqtl_out)<- index_pairs_un$snp1
-  saveRDS(coloc_eqtl_out, file="eqtl_colocalisation_stats.rds")
-#}
+# run coloc
+coloc_eqtl_out = lapply(gsub("_",":",index_pairs_un$snp1), runEQTL)
+names(coloc_eqtl_out)<- index_pairs_un$snp1
+saveRDS(coloc_eqtl_out, file="eqtl_colocalisation_stats.rds")
 
+# generate lc plots
+for ( i in 1:length(coloc_eqtl_out)) {
+  lapply(coloc_eqtl_out[[i]], getLCPlot, group="EUR", ylab="eQTL")
+}
 
 
 summarizeEQTL = function(index) {
@@ -458,8 +455,8 @@ collectData = function(coloc_res, coloc_res_EUR) {
 }
 
 
-#ivals = 1:nrow(index_pairs_un); ivals = ivals[!index_pairs_un$snp1%in%c("chr12_56034460_G_A","chr16_75218429_G_A")]
-ivals = 1:(nrow(index_pairs_un)-1); #ivals = ivals[!(index_pairs_un$snp1 == "chr12_56034460_G_A" | index_pairs_un$snp2=="chr16_75213493_A_G")]
+ivals = 1:nrow(index_pairs_un); #ivals = ivals[!index_pairs_un$snp1%in%c("chr12_56034460_G_A","chr16_75218429_G_A")]
+#ivals = 1:(nrow(index_pairs_un)-1); #ivals = ivals[!(index_pairs_un$snp1 == "chr12_56034460_G_A" | index_pairs_un$snp2=="chr16_75213493_A_G")]
 OUTTABLE = do.call("rbind",lapply(ivals, function(i) {collectData(coloc_out_un[[i]],coloc_out_EUR[[i]])}))
 saveRDS(OUTTABLE, file="caqtl_colocalisation_stats.rds")
 
@@ -481,12 +478,35 @@ done(rtffile)
 
 write.table(OUTTABLE_TOP,file="colocalisation_caqtl_tophits.txt", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t")
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Sensitivity analysis for BACH2 association (removing homozygous alt individuals)
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-samples_rs729 = dat_un[["samples"]]
-geno_rs729 = dat_un[["genotypes"]][,"chr6_90267049_G_A"]
-counts_rs729 = dat_un[["counts"]]["chr6_90266736_90267780",]
-dat_rs729 = data.frame(samples_rs729, gt=geno_rs729,count=counts_rs729)
-summary(lm(data=dat_rs729, formula=count~gt+PC1+PC2))
-summary(lm(data=dat_rs729[dat_rs729$gt<2,], formula=count~gt+PC1+PC2))
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # Sensitivity analysis for BACH2 association (removing homozygous alt individuals)
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# samples_rs729 = dat_un[["samples"]]
+# geno_rs729 = dat_un[["genotypes"]][,"chr6_90267049_G_A"]
+# counts_rs729 = dat_un[["counts"]]["chr6_90266736_90267780",]
+# dat_rs729 = data.frame(samples_rs729, gt=geno_rs729,count=counts_rs729)
+# summary(lm(data=dat_rs729, formula=count~gt+PC1+PC2))
+# summary(lm(data=dat_rs729[dat_rs729$gt<2,], formula=count~gt+PC1+PC2))
+#
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # Look up for ANKRD55
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# f1_ank = f1[f1$avsnp150%in%c("rs71624119","rs7731626"),]
+# f1_ank$Z_AFR = f1_ank$beta_AFR/f1_ank$se_AFR
+# f1_ank$Z_EUR = f1_ank$beta_EUR/f1_ank$se_EUR
+# f1_ank$Z_AMR = f1_ank$beta_AMR/f1_ank$se_AMR
+# f1_ank$Z_FIN = f1_ank$beta_FIN/f1_ank$se_FIN
+#
+# #grep 'chr5:56144903:G:A\|chr5:56148856:G:A'
+#
+# #Variants ordered by genomic position
+# chr5:56141024:T:A --> rs6873385
+# chr5:56142753:C:A --> rs6859219
+# chr5:56143024:C:T --> rs10065637
+# chr5:56144903:G:A --> rs71624119
+# chr5:56146422:T:C --> rs10213692
+# chr5:56148856:G:A --> rs7731626
+#
+# finemap[!is.na(finemap$MarkerName) & finemap$MarkerName=="chr5:56142753:C:A","rsid_merged"]
+# finemap[!is.na(finemap$MarkerName) & finemap$MarkerName=="chr5:56143024:C:T","rsid_merged"]
+# finemap[!is.na(finemap$MarkerName) & finemap$MarkerName=="chr5:56148856:G:A","rsid_merged"]

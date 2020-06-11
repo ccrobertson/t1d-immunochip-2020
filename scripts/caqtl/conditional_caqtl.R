@@ -14,10 +14,14 @@ significant_peaks = unique(res_meta[res_meta$SNP%in%credible_variants & res_meta
 # Get datasets
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dat_un = readRDS("DATASET_un.rds")
+dat_un$samples$selection = dat_un$samples$SQB %in% c("ATAC_UF_SQB101", "ATAC_UF_SQB102", "ATAC_UF_SQB103", "ATAC_UF_SQB104", "ATAC_UF_SQB105", "ATAC_UF_SQB106")
 #dat_stim = readRDS("DATASET_stim.rds")
-dat_un_EUR = readRDS("DATASET_un_EUR.rds")
-dat_un_AFR = readRDS("DATASET_un_AFR.rds")
 
+dat_un_EUR = readRDS("DATASET_un_EUR.rds")
+dat_un_EUR$samples$selection = dat_un_EUR$samples$SQB %in% c("ATAC_UF_SQB101", "ATAC_UF_SQB102", "ATAC_UF_SQB103", "ATAC_UF_SQB104", "ATAC_UF_SQB105", "ATAC_UF_SQB106")
+
+dat_un_AFR = readRDS("DATASET_un_AFR.rds")
+dat_un_AFR$samples$selection = dat_un_AFR$samples$SQB %in% c("ATAC_UF_SQB101", "ATAC_UF_SQB102", "ATAC_UF_SQB103", "ATAC_UF_SQB104", "ATAC_UF_SQB105", "ATAC_UF_SQB106")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create variant lookup object
@@ -172,21 +176,21 @@ conditionalAnalysisJointModel = function(result, dat_sub, covariates) {
 # Run stepwise conditional analysis for significant peaks
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 peaks = lapply(significant_peaks, getPeakObject)
-stepwise_results_un = lapply(peaks, conditionalAnalysisStepwise, dat_sub=dat_un, covariates=c("PC1","PC2", "age_sample", "TSS_Score"))
-stepwise_results_un_EUR = lapply(peaks, conditionalAnalysisStepwise, dat_sub=dat_un_EUR, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score"))
-stepwise_results_un_AFR = lapply(peaks, conditionalAnalysisStepwise, dat_sub=dat_un_AFR, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score"))
+stepwise_results_un = lapply(peaks, conditionalAnalysisStepwise, dat_sub=dat_un, covariates=c("PC1","PC2", "age_sample", "TSS_Score", "selection"))
+stepwise_results_un_EUR = lapply(peaks, conditionalAnalysisStepwise, dat_sub=dat_un_EUR, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score", "selection"))
+stepwise_results_un_AFR = lapply(peaks, conditionalAnalysisStepwise, dat_sub=dat_un_AFR, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score", "selection"))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Fit joint models and save summary stats by index variant
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-joint_results_un = unlist(lapply(stepwise_results_un, conditionalAnalysisJointModel, dat_sub=dat_un, covariates=c("PC1","PC2", "age_sample", "TSS_Score")), recursive=FALSE)
+joint_results_un = unlist(lapply(stepwise_results_un, conditionalAnalysisJointModel, dat_sub=dat_un, covariates=c("PC1","PC2", "age_sample", "TSS_Score", "selection")), recursive=FALSE)
 saveRDS(joint_results_un, file="joint_caqtl_models_un.rds")
 
 
 # TRY JOINT MODEL IN EUR AND AFR SAMPLES USING INDEX VARIANTS FROM META-ANALYSIS
-joint_results_un_EUR = unlist(lapply(stepwise_results_un, conditionalAnalysisJointModel, dat_sub=dat_un_EUR, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score")), recursive=FALSE)
+joint_results_un_EUR = unlist(lapply(stepwise_results_un, conditionalAnalysisJointModel, dat_sub=dat_un_EUR, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score", "selection")), recursive=FALSE)
 saveRDS(joint_results_un_EUR, file="joint_caqtl_models_EUR.rds")
 
-joint_results_un_AFR = unlist(lapply(stepwise_results_un, conditionalAnalysisJointModel, dat_sub=dat_un_AFR, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score")), recursive=FALSE)
+joint_results_un_AFR = unlist(lapply(stepwise_results_un, conditionalAnalysisJointModel, dat_sub=dat_un_AFR, covariates=c("PC1_ancestry_specific","PC2_ancestry_specific", "age_sample", "TSS_Score", "selection")), recursive=FALSE)
 saveRDS(joint_results_un_AFR, file="joint_caqtl_models_AFR.rds")
