@@ -1,11 +1,13 @@
-Results from fine-mapping T1D-associated ImmunoChip regions using the software [GUESSFM](https://github.com/chr1swallace/GUESSFM) are in these directory subdirectories.
+## Description of content
+Results from fine-mapping T1D-associated ImmunoChip regions using the software [GUESSFM](https://github.com/chr1swallace/GUESSFM) are in these subdirectories.
 
 For easy access to the image files, we recommend cloning the repository to your local computer, which will allow you to open any image (.png) files with your preferred desktop image viewer.
-You can do so by navigaating to the desired directory and running the following command in your terminal:
+You can clone the repository by running the following command in your terminal:
 ```
 git clone https://github.com/ccrobertson/t1d-immunochip-2020
 ```
 
+## Details about subdirectory content
 Each directory shows a fine mapped region, named either by a proximal candidate causal gene or a cytoband if no known candidate causal genes are in the region.
 As standard, the directory will contain the following figures:
 1)	A haplotype analysis. The name of this file is the chromosome, position, reference and alternate allele from the index variant in the univariable analysis. The first panel contains estimates of each haplotype on T1D risk, containing index variants from GUESSFM groups with group posterior probability >0.8. The second panel contains the frequency estimates of these haplotypes in the MEGAT1D population. The third panel shows the haplotype, with black squares representing the major allele and white squares representing the minor allele at that variant. 
