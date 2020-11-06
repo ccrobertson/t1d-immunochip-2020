@@ -33,10 +33,11 @@ datnew$rsid_merged = sapply(datnew$ChrPos, function(x) {
     if (ID1==ID2) {rsid=ID2}
     else if (ID1==".") {rsid=ID2}
     else if (ID2==".") {rsid=ID1}
-    else {rsid=paste(ID1,ID2,sep=";")}
+    else {rsid=ID2}
   }
 )
 datnew$tag=gsub(".",":",datnew$tag, fixed=TRUE)
+#datnew$tag_rsid = sapply(datnew$tag, function(x) { rsid = datnew$avsnp150[datnew$MarkerName==x & !is.na(datnew$MarkerName)]; if (rsid==".") {tag=x} else {tag=rsid}; return(tag)} )
 datnew$tag_rsid = sapply(datnew$tag, function(x) { rsid = datnew$rsid_merged[datnew$MarkerName==x & !is.na(datnew$MarkerName)]; if (rsid==".") {tag=x} else {tag=rsid}; return(tag)} )
 datnew$ppsum = sapply(datnew$tag, function(x) {datnew$ppsum[datnew$MarkerName==x & !is.na(datnew$MarkerName)]})
 datnew$credset_size = sapply(datnew$tag, function(x) {d = datnew[datnew$tag==x,]; return(dim(d)[1])})
@@ -47,8 +48,9 @@ datnew$region_pos = sapply(datnew$tag, function(x) {reg = datnew$region[datnew$M
 datnew_ordered = datnew[order(datnew$chromosome, datnew$region_pos, datnew$tag_pos, datnew$position),]
 
 ### Generate tables for saving
-fields = c("region","region_pos","MarkerName","ID","avsnp150","rsid_merged","tag","tag_rsid","tag_pos","credset_size","chromosome","position","Allele1_new","Allele2_new","AF_1000G_AFR","AF_1000G_EUR","OddsRatio","Effect_new","StdErr","P.value","ppsum","pp","excluded","cytoBand","Func.ensGene", "Func.refGene", "Gene.ensGene","Gene.refGene","ExonicFunc.ensGene","ExonicFunc.refGene", "AAChange.ensGene", "AAChange.refGene")
-OUTTABLE_all = datnew_ordered[,fields]
+fields = c("region","region_pos","MarkerName","ID","avsnp150","tag","tag_rsid","tag_pos","credset_size","chromosome","position","Allele1_new","Allele2_new","AF_1000G_AFR","AF_1000G_EUR","OddsRatio","Effect_new","StdErr","P.value","ppsum","pp","excluded","cytoBand","Func.ensGene", "Func.refGene", "Gene.ensGene","Gene.refGene","ExonicFunc.ensGene","ExonicFunc.refGene", "AAChange.ensGene", "AAChange.refGene")
+fields_manuscript = c("region","MarkerName","rsid_merged","tag","tag_rsid","credset_size","chromosome","position","Allele1_new","Allele2_new","AF_1000G_AFR","AF_1000G_EUR","OddsRatio","Effect_new","StdErr","P.value","ppsum","pp","excluded","cytoBand","Func.ensGene", "Func.refGene", "Gene.ensGene","Gene.refGene","ExonicFunc.ensGene","ExonicFunc.refGene", "AAChange.ensGene", "AAChange.refGene")
+OUTTABLE_all = datnew_ordered[,fields_manuscript]
 OUTTABLE_protein_altering = OUTTABLE_all[OUTTABLE_all$ppsum>0.5 & (OUTTABLE_all$ExonicFunc.refGene %in% c("stopgain","nonsynonymous SNV","frameshift substitution") | OUTTABLE_all$Func.refGene=="splicing" | OUTTABLE_all$ExonicFunc.ensGene %in% c("stopgain","nonsynonymous SNV","frameshift substitution") | OUTTABLE_all$Func.ensGene=="splicing"), ]
 OUTTABLE_top_candidates = OUTTABLE_protein_altering[!is.na(OUTTABLE_protein_altering$pp) & OUTTABLE_protein_altering$pp>0.1,]
 
