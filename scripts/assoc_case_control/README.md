@@ -31,66 +31,71 @@ This script performs post-imputation QC on the set of analysed SNPs then generat
 ```
 Reads in results from initial meta run.
 
+```
+6) fdr_check_dens.R
+```
+Identify regions associated to FDR significance
+
 
 ```
-6) ./conditional/cond_setup_5pc_diff_dens.R 
+7) ./conditional/cond_setup_5pc_diff_dens.R 
 ```
 Set up the conditional analyses by producing subsets of VCFs to perform conditional regressions with.
 
 
 ```
-7) ./conditional/conditional_do_5pc_diff_dens.R
+8) ./conditional/conditional_do_5pc_diff_dens.R
 ```
 Generates the SNPTEST scripts which will carry out the stepwise conditional regressions.
 
 
 ## Phase I and II meta-analyis - case-control and families
 ```
-8) meta_fams_inds_vcf_5pc_diff_dens.R  
+9) meta_fams_inds_vcf_5pc_diff_dens.R  
 ```
 Inverse variance-weighted meta analysis combining the family TDT results with the indepedent individual results.
 
 
 ## Dominant and recessive mode of inheritance analyses
 ```
-9) ./domres/pre_meta_qc_dom.R 
+10) ./domres/pre_meta_qc_dom.R 
 ```
 This script generates shell scripts to perform association tests for each different cohort, directly from the VCF file and taking into account the uncertainty in the genotype imputation, assuming a dominant mode of inheritance.
 
 
 ```
-10) ./domres/post_imputation_qc_newml_dom_5pc_diff_dens.R
+11) ./domres/post_imputation_qc_newml_dom_5pc_diff_dens.R
 ```
 This script performs post-imputation QC on the set of analysed SNPs assuming a dominant mode of inheritance.
 
 
 ```
-11) ./domres/readin_metal_vcf_newml_dom_5pc_diff_dens.R
+12) ./domres/readin_metal_vcf_newml_dom_5pc_diff_dens.R
 ```
 Reads in results from initial meta-analysis run with dominant mode of inheritance.
 
 
 ```
-12) ./domres/pre_meta_qc_res.R
+13) ./domres/pre_meta_qc_res.R
 ```
 This script generates shell scripts to perform association tests for each different cohort, directly from the VCF file and taking into account the uncertainty in the genotype imputation, assuming a recessive mode of inheritance.
 
 
 ```
-13) ./domres/post_imputation_qc_newml_res_5pc_diff_dens.R
+14) ./domres/post_imputation_qc_newml_res_5pc_diff_dens.R
 ```
 This script performs post-imputation QC on the set of analysed SNPs assuming a recessive mode of inheritance.
 
 
 
 ```
-14) ./domres/readin_metal_vcf_newml_res_5pc_diff_dens.R
+15) ./domres/readin_metal_vcf_newml_res_5pc_diff_dens.R
 ```
 Reads in results from initial meta-analysis run with recessive mode of inheritance.
 
 
 # Generating some supplementary Tables
 ```
-15) supplementary_tables_generate_dens_new.R
+16) supplementary_tables_generate_dens_new.R
 ```
 Generating a number of supplementary Tables for the manuscript.
