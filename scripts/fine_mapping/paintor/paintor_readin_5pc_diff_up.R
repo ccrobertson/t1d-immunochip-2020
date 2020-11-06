@@ -32,7 +32,7 @@ ifelse(orig$Marker=="chr2:162254026:A:G","IFIH1",
 ifelse(orig$Marker=="chr2:191105394:C:G","STAT4",
 ifelse(orig$Marker=="chr2:203874196:G:A","CTLA4",
 ifelse(orig$Marker=="chr3:46342713:G:A","CCR5",
-ifelse(orig$Marker=="chr4:26083889:G:A","RBPJ",       
+ifelse(orig$Marker=="chr4:26083889:G:A","RBPJ",
 ifelse(orig$Marker=="chr4:122322439:A:ATC","IL2/IL21",
 ifelse(orig$Marker=="chr5:35888101:G:A","IL7R",
 ifelse(orig$Marker=="chr5:40521603:G:T","TTC33",
@@ -102,10 +102,10 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
   exons$plotStart = as.numeric(sapply(exons$start, function(x) max(x,region[["start"]])))
   exons$plotEnd = sapply(exons$end, function(x) min(x,region[["end"]]))
   exons$width = exons$plotEnd - exons$plotStart
-  exons$ymin = -0.25
-  exons$ymax = 0.25
-  exons$ymin[exons$feature=="protein_coding"] <- -0.5
-  exons$ymax[exons$feature=="protein_coding"] <- 0.5
+  exons$ymin = -0.5
+  exons$ymax = 0.5
+  exons$ymin[exons$feature=="protein_coding"] <- -1
+  exons$ymax[exons$feature=="protein_coding"] <- 1
 
   #create genes data frame
   genes = data.frame(
@@ -152,7 +152,7 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
     #connect exons
     geom_rect(data=genes, aes(xmin=plotStart, xmax=plotEnd, ymin=-0.005, ymax=0.005), colour=geneColor, fill=geneColor, alpha=1) +
     #add arrow ticks
-    geom_segment(data=arrows, aes(x=start, xend=end, y=0, yend=0), lineend="butt", linejoin="mitre", arrow = arrow(angle=20, length = unit(0.5, "lines"), ends="last", type="closed"), colour=geneColor) +
+    geom_segment(data=arrows, aes(x=start, xend=end, y=0, yend=0), lineend="butt", linejoin="mitre", arrow = arrow(angle=20, length = unit(0.3, "lines"), ends="last", type="closed"), colour=geneColor) +
     #tweak aesthetics
     scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0)) +
     scale_y_continuous(limits = c(-1,1), expand = c(0, 0)) +
@@ -239,7 +239,7 @@ genes<-geneTrack(reg)
 
 one<-ggplot(data=init, aes(position,abs(ZSCORE.P1), colour=abs(ld))) + geom_point(size=0.2) +
 scale_color_gradient(low = "black", high = "red", name="EUR LD to \nlead variant") +
-scale_y_continuous(name="Absolute z-score (EUR)") + 
+scale_y_continuous(name="Absolute z-score (EUR)") +
 theme(panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       panel.grid=element_line(size=0.5),
@@ -250,7 +250,7 @@ theme(panel.grid.major = element_blank(),
       axis.title.y=element_text(size=6),
       legend.title=element_text(size=6),
       legend.text=element_text(size=4),
-      legend.key.size=unit(0.6,"lines")) 
+      legend.key.size=unit(0.6,"lines"))
 
 ch<-grep(paste0("Locus",number,"$"),oneandtwo$V1)
 ch1<-grep(paste0("Locus",number,"$"),oneandthree$V1)
@@ -280,7 +280,7 @@ theme(panel.grid.major = element_blank(),
       axis.line.y = element_line(size=0.5),
       axis.text.y=element_text(size=4),
       axis.title.y=element_text(size=6),
-      legend.title=element_text(size=6), 
+      legend.title=element_text(size=6),
       legend.text=element_text(size=4),
       legend.key.size=unit(0.6,"lines"))
 }
@@ -296,9 +296,9 @@ rownames(matf)<-snpsf$RSID
 
 ld<-matf[,colnames(matf)==top$MarkerName]
 init$ldf<-ld
-three<-ggplot(data=init, aes(position,abs(ZSCORE.P3),colour=abs(ldf))) + geom_point(size=0.2) + 
+three<-ggplot(data=init, aes(position,abs(ZSCORE.P3),colour=abs(ldf))) + geom_point(size=0.2) +
 scale_color_gradient(low = "black", high = "red", name="FIN LD to \nlead variant") +
-scale_y_continuous(name="Absolute z-score (FIN)") + 
+scale_y_continuous(name="Absolute z-score (FIN)") +
 theme(panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       panel.grid=element_line(size=0.5),
@@ -307,7 +307,7 @@ theme(panel.grid.major = element_blank(),
       axis.line.y = element_line(size=0.5),
       axis.text.y=element_text(size=4),
       axis.title.y=element_text(size=6),
-      legend.title=element_text(size=6), 
+      legend.title=element_text(size=6),
       legend.text=element_text(size=4),
       legend.key.size=unit(0.6,"lines"))
 }
@@ -320,7 +320,7 @@ chrpos_ticks_breaks = seq(from = min(init$position), to = max(init$position), by
 chrpos_ticks_labels = paste0(round(chrpos_ticks_breaks/1e6, digits=3),"Mb")
 paint<-ggplot(data=paintor, aes(position, Posterior_Prob,colour=abs(ld1))) + geom_point(size=0.2) +
 scale_color_gradient(low = "black", high = "red", name="EUR LD to \nlead variant") +
-scale_y_continuous(name="PAINTOR posterior probability") + 
+scale_y_continuous(name="PAINTOR posterior probability") +
 scale_x_continuous(breaks=chrpos_ticks_breaks, labels=chrpos_ticks_labels) +
 theme(panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -331,7 +331,7 @@ theme(panel.grid.major = element_blank(),
       axis.text.x=element_text(size=4),
       axis.text.y=element_text(size=4),
       axis.title.y=element_text(size=6),
-      legend.title=element_text(size=6), 
+      legend.title=element_text(size=6),
       legend.text=element_text(size=4),
       legend.key.size=unit(0.6,"lines"))
 
@@ -528,18 +528,16 @@ getAtacPlot = function(dat_reg, region, title=NULL) {
       panel.spacing.y = unit(0.1,"lines"),
       panel.grid = element_blank(),
       panel.background = element_blank(),
-      axis.text.x = element_text(size=4), 
+      axis.text.x = element_text(size=4),
       axis.text.y=element_blank(),axis.ticks.y=element_blank(),
       legend.position = "none",
       plot.title = element_text(hjust=0.5, face="bold"))
 }
 
 
-plot1<-getAtacPlot(stanford_reg_sub, region_broad) 
+plot1<-getAtacPlot(stanford_reg_sub, region_broad)
 library(ggbio)
 plots<-tracks(snpTrack,genet, plot1,heights=c(0.4,1,8.6)) + geom_vline(xintercept=26083858, size=0.08, colour="lightblue") + geom_vline(xintercept=26083889, size=0.08, colour="lightblue") +
-geom_vline(xintercept=26084947, size=0.08, colour="lightblue") + geom_vline(xintercept=26086506, size=0.08, colour="lightblue") + geom_vline(xintercept=26093692, size=0.08, colour="lightblue") + 
+geom_vline(xintercept=26084947, size=0.08, colour="lightblue") + geom_vline(xintercept=26086506, size=0.08, colour="lightblue") + geom_vline(xintercept=26093692, size=0.08, colour="lightblue") +
 theme(axis.ticks.x=element_line(size=0.1))
 ggsave(plots, file=paste0("~/output/",extension,"_gwas/paintor_5pc_diff/atac_bigwigs_1_up.png"),dpi=800, height=10, width=7.5,units="cm")
-
-

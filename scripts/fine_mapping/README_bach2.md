@@ -19,3 +19,17 @@ Visualize credible set overlap with tracks in each region (for Supplemental Data
 ```bash
 Rscript ${scripts}/fine_mapping/generate_region_tracks.R
 ```
+
+
+View chromHmm colors
+```R
+key = readRDS("Blueprint_chromHMM_tracks_state_key.rds")
+key = key[!duplicated(key$label),]
+key$plotState = factor(key$label, levels=key$label, labels=key$label)
+key$x = 1
+key$y = 1
+pdf("chromhmm_blueprint_colors.pdf")
+ggplot(data=key) + geom_rect(aes(xmin=x, xmax=x+1, ymin=y, ymax=y+1, fill=plotState)) + scale_fill_manual(breaks=key$label, values=key$color_hex) + facet_wrap(vars(label))
+ggplot(data=key) + geom_rect(aes(xmin=x, xmax=x+1, ymin=y, ymax=y+1, fill=plotState)) + scale_fill_manual(breaks=key$label, values=key$color_hex) + facet_wrap(vars(label_12state))
+dev.off()
+```

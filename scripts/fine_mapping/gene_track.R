@@ -33,10 +33,10 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
   exons$plotStart = as.numeric(sapply(exons$start, function(x) max(x,region[["start"]])))
   exons$plotEnd = sapply(exons$end, function(x) min(x,region[["end"]]))
   exons$width = exons$plotEnd - exons$plotStart
-  exons$ymin = -0.25
-  exons$ymax = 0.25
-  exons$ymin[exons$feature=="protein_coding"] <- -0.5
-  exons$ymax[exons$feature=="protein_coding"] <- 0.5
+  exons$ymin = -0.5
+  exons$ymax = 0.5
+  exons$ymin[exons$feature=="protein_coding"] <- -1
+  exons$ymax[exons$feature=="protein_coding"] <- 1
 
   #create genes data frame
   genes = data.frame(
@@ -76,6 +76,10 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
   arrows$end[arrows$strand=="-"] = arrows$start[arrows$strand=="-"]-1
   arrows$end[arrows$strand=="+"] = arrows$start[arrows$strand=="+"]+1
 
+  #creat x-axis ticks
+  chrpos_ticks_breaks = seq(from = region[["start"]], to = region[["end"]], by = round((region[["end"]]-region[["start"]])/4, digits=0))
+  chrpos_ticks_labels = paste0(round(chrpos_ticks_breaks/1e6, digits=3),"Mb")
+
   if(!is.null(arrows)) {
   ggplot() +
     #plot exons
@@ -83,9 +87,12 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
     #connect exons
     geom_rect(data=genes, aes(xmin=plotStart, xmax=plotEnd, ymin=-0.005, ymax=0.005), colour=geneColor, fill=geneColor, alpha=1) +
     #add arrow ticks
-    geom_segment(data=arrows, aes(x=start, xend=end, y=0, yend=0), lineend="butt", linejoin="mitre", arrow = arrow(angle=20, length = unit(0.5, "lines"), ends="last", type="closed"), colour=geneColor) +
+    geom_segment(data=arrows, aes(x=start, xend=end, y=0, yend=0), lineend="butt", linejoin="mitre", arrow = arrow(angle=20, length = unit(0.3, "lines"), ends="last", type="closed"), colour=geneColor) +
+    #add scalebar
+    #geom_segment(data=genes, aes(x = plotStart, y = -1.5, xend = plotStart+5000, yend=-1.5)) + geom_text(data=genes, aes(x = plotStart+4500, y = -1.7), label="5kb", size=3) +
     #tweak aesthetics
-    scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0)) +
+    scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0), breaks=chrpos_ticks_breaks, labels=chrpos_ticks_labels) +
+    #scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0)) +
     scale_y_continuous(limits = c(-1,1), expand = c(0, 0)) +
     facet_grid(symbol~., margins=FALSE, switch="y") +
     ylab(" ") + xlab(" ") +
@@ -97,8 +104,8 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
       panel.grid.minor = element_blank(),
       panel.grid=element_line(size=0.5),
       panel.background = element_blank(),
-      axis.text.x = element_blank(),
-      axis.ticks.x=element_blank(),
+      axis.text.x = element_text(size=8),
+      #axis.ticks.x=element_blank(),
       axis.text.y=element_blank(),
       axis.ticks.y=element_blank(),
       legend.position = "none")
@@ -108,8 +115,10 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
       geom_rect(data=exons, aes(xmin=plotStart, xmax=plotEnd, ymin=ymin, ymax=ymax), colour=geneColor, fill=geneColor, alpha=1) +
       #connect exons
       geom_rect(data=genes, aes(xmin=plotStart, xmax=plotEnd, ymin=-0.005, ymax=0.005), colour=geneColor, fill=geneColor, alpha=1) +
+      #add scalebar
+      #geom_segment(data=genes, aes(x = plotStart, y = -1.5, xend = plotStart+5000, yend=-1.5)) + geom_text(data=genes, aes(x = plotStart+4500, y = -1.7), label="5kb", size=3) +
       #tweak aesthetics
-      scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0)) +
+      scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0), breaks=chrpos_ticks_breaks, labels=chrpos_ticks_labels) +
       scale_y_continuous(limits = c(-1,1), expand = c(0, 0)) +
       facet_grid(symbol~., margins=FALSE, switch="y") +
       ylab(" ") + xlab(" ") +
@@ -121,8 +130,8 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
         panel.grid.minor = element_blank(),
         panel.grid=element_line(size=0.5),
         panel.background = element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x=element_blank(),
+        #axis.text.x = element_blank(),
+        #axis.ticks.x=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
         legend.position = "none")
@@ -131,9 +140,10 @@ geneTrack = function(region, gene_list=NULL, colour=NULL) {
 
 
 
-# pdf("gene_track.pdf", width=10, height=2)
+pdf("gene_track.pdf", width=10, height=2)
+geneTrack(region=list(chr="chr6", start=90262049,end=90291049), gene_list=c("BACH2"))
 # geneTrack(region=list(chr="chr10", start=5988475,end=6127208))
 # geneTrack(region=list(chr="chr10", start=5988475,end=6127208), gene_list=c("IL2RA", "RBM17"), colour=cbbPalette[2])
 # geneTrack(region=list(chr="chr2", start=162147475,end=162479787), colour=cbbPalette[2])
 # geneTrack(region=list(chr="chr2", start=162147475,end=162479787), gene_list=c("IFIH1"))
-# dev.off()
+dev.off()

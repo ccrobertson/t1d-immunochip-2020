@@ -130,10 +130,16 @@ interactions_to_plot$midTarget = mean(c(interactions_to_plot$startTarget, intera
 
 ### Plot bait, target,and interaction
 getInteractionPlot = function(interactions_to_plot, region) {
+
+  #create x-axis ticks
+  chrpos_ticks_breaks = seq(from = region[["start"]], to = region[["end"]], by = round((region[["end"]]-region[["start"]])/4, digits=0))
+  chrpos_ticks_labels = paste0(round(chrpos_ticks_breaks/1e6, digits=3),"Mb")
+
+  #generate plot
   ggplot(interactions_to_plot) +
     geom_rect(aes(xmin=startBait,xmax=endBait, ymin=0, ymax=1)) +
     geom_rect(aes(xmin=startTarget,xmax=endTarget, ymin=0, ymax=1)) +
-    scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0)) +
+    scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0), breaks=chrpos_ticks_breaks, labels=chrpos_ticks_labels) +
     scale_y_continuous(limits = c(0,5), expand = c(0, 0)) +
     geom_curve(
       aes(x=midTarget, xend=startBait, y=1, yend=1.2),
@@ -148,11 +154,12 @@ getInteractionPlot = function(interactions_to_plot, region) {
        panel.grid.minor = element_blank(),
        panel.border = element_blank(),
        panel.background = element_blank(),
-      axis.title.x = element_blank(),
+       axis.title.x = element_blank(),
+       axis.text.x = element_text(size=8),
+       #axis.ticks.x = element_blank,
        axis.title.y = element_blank(),
-       axis.text.x = element_blank(),
        axis.text.y = element_blank(),
-       axis.ticks = element_blank(),
+       axis.ticks.y = element_blank(),
        axis.line = element_blank())
 }
 pdf("bach2_pchic.pdf")

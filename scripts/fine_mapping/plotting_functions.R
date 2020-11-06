@@ -82,7 +82,7 @@ getAtacPlot = function(dat_reg, region, title=NULL) {
   dat_reg$plotCat = factor(dat_reg$plotCat, levels=atac_cell_categories_ordered)
   dat_reg$score[dat_reg$score>100] <- 100
   chrpos_ticks_breaks = seq(from = region[["start"]], to = region[["end"]], by = round((region[["end"]]-region[["start"]])/4, digits=0))
-  chrpos_ticks_labels = paste0(round(chrpos_ticks_breaks/1e6, digits=3),"Mb")
+  chrpos_ticks_labels = paste0(round(chrpos_ticks_breaks/1e3, digits=2),"Kb")
   ggplot(dat_reg) + geom_rect(aes(xmin=start, xmax=end, ymin=0, ymax=score, fill=plotCat)) +
     scale_x_continuous(limits = c(region[["start"]],region[["end"]]), expand = c(0, 0), breaks=chrpos_ticks_breaks, labels=chrpos_ticks_labels) +
     #scale_y_continuous(limits = c(0, 1.25*max(dat_reg$score)), expand = c(0,0)) +
@@ -95,7 +95,8 @@ getAtacPlot = function(dat_reg, region, title=NULL) {
       panel.spacing.y = unit(0.1,"lines"),
       panel.grid = element_blank(),
       panel.background = element_blank(),
-      #axis.text.x = element_blank(), axis.ticks.x=element_blank(),
+      axis.text.x = element_text(size=8),
+      #axis.ticks.x=element_blank(),
       axis.text.y=element_blank(),axis.ticks.y=element_blank(),
       legend.position = "none",
       plot.title = element_text(hjust=0.5, face="bold"))
@@ -174,7 +175,7 @@ getChromHMMPlot2 = function(dat_reg, region, tissue_key, state_key, snp_lines) {
       strip.text.y = element_text(size = 8, colour = "black", angle = 180),
       panel.spacing.y = unit(0,"inches"),
       panel.background = element_blank(),
-      #axis.text.x = element_blank(),
+      axis.text.x = element_text(size=8),
       #axis.ticks.x = element_blank(),
       axis.text.y=element_blank(),
       axis.ticks.y=element_blank(),
