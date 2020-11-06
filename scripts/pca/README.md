@@ -9,7 +9,7 @@ bash ${scripts}/pca/pca_on_1000g.sh > ${logs}/pca_analysis.log
 Now use k-means clustering of the top 10 projected PCs to determine gentically similar subgroups for association analysis. This type of kmeans approach has been suggested [previously](https://bmcgenet.biomedcentral.com/articles/10.1186/1471-2156-11-108))
 ```bash
 Rscript ${scripts}/pca/define_ancestry_clusters.R ${pca} ${phenofile} ${resources}/1000genomes_populations_superpopulations.txt
-Rscript ${scripts}/pca/plot_1000g_projected_pcas.R ${pca} ${phenofile} ${resources}/1000genomes_populations_superpopulations.txt
+Rscript ${scripts}/pca/plot_1000g_projected_pcs.R ${pca} ${phenofile} ${resources}/1000genomes_populations_superpopulations.txt
 ```
 
 ### Define trios and case-control analysis groups

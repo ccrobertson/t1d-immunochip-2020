@@ -8,12 +8,11 @@ args = commandArgs(trailingOnly=TRUE)
 cdir=args[1]
 phenofile=args[2]
 superpopulations=args[3]
-project=args[4]
 
 setwd(cdir)
 
 #get MEGA PCs
-mega_all =  read.table(paste0(project,"_cluster_assignments_and_pcs.txt"), header=TRUE, sep="\t")
+mega_all =  read.table(paste0("mega_cluster_assignments_and_pcs.txt"), header=TRUE, sep="\t")
 
 #Get 1000G population codes
 df.loc = read.table(superpopulations, header=FALSE)
@@ -50,8 +49,9 @@ getSideBySidePlot = function(cluster, title=NULL) {
 }
 
 
+thous_g$continent2 = factor(thous_g$continent, levels=c("AFR","AMR","EAS","EUR","SAS"), labels=c("1000G_AFR","1000G_AMR","1000G_EAS","1000G_EUR","1000G_SAS"))
 p_legend = ggplot() +
-		geom_point(data=thous_g, aes(x=PC1, y=PC2, color=continent)) +
+		geom_point(data=thous_g, aes(x=PC1, y=PC2, color=continent2)) +
 		theme(
 				legend.text=element_text(size=12),
 				legend.background = element_rect(colour = NA),
@@ -59,11 +59,11 @@ p_legend = ggplot() +
 		labs(color="1000 Genomes\nContinental Populations")
 
 png(paste0("ancestry_all.png"), height=480, width=640)
-p_final = grid.arrange(getSideBySidePlot("AFR","African-American"),
-		getSideBySidePlot("AMR","Admixed-American/South Asian"),
-		getSideBySidePlot("EAS","East Asian"),
-		getSideBySidePlot("FIN","Finnish"),
-		getSideBySidePlot("EUR","European"),
+p_final = grid.arrange(getSideBySidePlot("AFR","African Admixed (AFR)"),
+		getSideBySidePlot("AMR","Other Admixed (AMR)"),
+		getSideBySidePlot("EAS","East Asian (EAS)"),
+		getSideBySidePlot("FIN","Finnish (FIN)"),
+		getSideBySidePlot("EUR","European (EUR)"),
 		get_legend(p_legend),
 		nrow=3)
 p_final
