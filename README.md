@@ -1,4 +1,4 @@
-This repository contains scripts and supplemental data from "Fine-mapping, trans-ancestral and genomic analyses identify causal variants, cells, genes and drug targets for type 1 diabetes"
+This repository contains scripts and supplemental data from "Fine-mapping, trans-ancestral and genomic analyses identify causal variants, cells, genes and drug targets for type 1 diabetes" ([Robertson, Inshaw, et al 2020](https://www.biorxiv.org/content/10.1101/2020.06.19.158071v1))
 
 Please see the scripts directory for a detailed description of the analysis pipeline and subdirectories for code used to implement analyses.
 
