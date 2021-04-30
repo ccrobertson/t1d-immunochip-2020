@@ -1,7 +1,7 @@
 ## Exploring the GraphQL API R implementation for accessing the Open Targets database
 # Based on this Tweetorial
 # https://twitter.com/enricoferrero/status/1060930693239357441
-
+setwd(Sys.getenv("manuscript"))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set up API
@@ -44,8 +44,8 @@ qry$query('my_query', '{
 }')
 
 # run query and format results:
-cli$exec(qry$queries$my_query)
-res <- fromJSON(cli$exec(qry$queries$my_query), flatten = TRUE)$data$indexVariantsAndStudiesForTagVariant
+#cli$exec(qry$queries$my_query)
+#res <- fromJSON(cli$exec(qry$queries$my_query), flatten = TRUE)$data$indexVariantsAndStudiesForTagVariant
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,7 +87,7 @@ t1d_dat$t1d_lead = gsub("chr","", gsub(":","_", t1d_dat$MarkerName))
 
 
 # apply wrapper function across leads
-res = lapply(t1d_dat$t1d_lead, getVariantInfo)
+res_OpenTargets = lapply(t1d_dat$t1d_lead, getVariantInfo)
 
 
 # # investigate snps with no results
@@ -111,7 +111,7 @@ res = lapply(t1d_dat$t1d_lead, getVariantInfo)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # concatenate all data
-res_all_tmp = do.call("rbind", res)
+res_all_tmp = do.call("rbind", res_OpenTargets)
 
 # order variants by chromosome positions
 res_all_tmp2 = merge(res_all_tmp, t1d_dat[,c("t1d_lead","MarkerName","ID","chromosome","position","Candidate.Gene","Novel","EffectphaseIandII")],all.x=TRUE, all.y=FALSE, by.x="input_var",by.y="t1d_lead")
@@ -194,7 +194,7 @@ res_biomarkers_u = res_biomarkers_sorted[!duplicated(res_biomarkers_sorted$uniqu
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Run query for summary stats by snp
+# Run query for summary stats for each T1D lead snp
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For each snp-trait pair in res_all we need the summary stats for the association
 # between the t1d lead variant and the trait
@@ -251,32 +251,54 @@ sumstats_biomarkers_df = do.call("rbind", sumstats_biomarkers)
 res_biomarker2 = merge(res_biomarkers_u, sumstats_biomarkers_df, suffixes = c("",".trait2"), all=TRUE, by=c("input_var","study.studyId"))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# If T1D lead summary stat is unavailable, get T1D association for lead SNP from other trait
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+res_immune2_missing = res_immune2[is.na(res_immune2$beta.trait2) & is.na(res_immune2$oddsRatio.trait2),]
+
+load(file.path(Sys.getenv("meta"),"dens/resultsmeta_ind_fam_tdt_5pc_diff_dens.RData"))
+t1d_meta_stats = res
+t1d_meta_stats$MarkerName2_tmp = gsub(":","_", t1d_meta_stats$MarkerName)
+t1d_meta_stats$MarkerName2 = gsub("chr","",t1d_meta_stats$MarkerName2_tmp)
+
+sum(res_immune2_missing$indexVariant.id %in% t1d_meta_stats$MarkerName2)
+sum(!res_immune2$input_var %in% t1d_meta_stats$MarkerName2)
+
+row.names(t1d_meta_stats) <- t1d_meta_stats$MarkerName2
+res_immune2$indexVariant_trait2.t1d_beta = t1d_meta_stats[res_immune2$indexVariant.id,"Effect"]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create indicator of concordance between T1D and other traits
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#res_immune2$trait_sign = NA
+#res_immune2$trait_sign[(!is.na(res_immune2$beta.trait2) & res_immune2$beta.trait2>0) | (!is.na(res_immune2$oddsRatio.trait2) & res_immune2$oddsRatio.trait2>1) ] <- 1
+#res_immune2$trait_sign[(!is.na(res_immune2$beta.trait2) & res_immune2$beta.trait2<0) | (!is.na(res_immune2$oddsRatio.trait2) & res_immune2$oddsRatio.trait2<1) ] <- -1
+#res_immune2$concordance = sign(res_immune2$EffectphaseIandII * res_immune2$trait_sign)
+
+
 res_immune2$trait_sign = NA
-res_immune2$trait_sign[(!is.na(res_immune2$beta.trait2) & res_immune2$beta.trait2>0) | (!is.na(res_immune2$oddsRatio.trait2) & res_immune2$oddsRatio.trait2>1) ] <- 1
-res_immune2$trait_sign[(!is.na(res_immune2$beta.trait2) & res_immune2$beta.trait2<0) | (!is.na(res_immune2$oddsRatio.trait2) & res_immune2$oddsRatio.trait2<1) ] <- -1
-res_immune2$concordance = sign(res_immune2$EffectphaseIandII * res_immune2$trait_sign)
+res_immune2$trait_sign[(!is.na(res_immune2$beta) & res_immune2$beta>0) | (!is.na(res_immune2$oddsRatio) & res_immune2$oddsRatio>1) ] <- 1
+res_immune2$trait_sign[(!is.na(res_immune2$beta) & res_immune2$beta<0) | (!is.na(res_immune2$oddsRatio) & res_immune2$oddsRatio<1) ] <- -1
+res_immune2$concordance = sign(res_immune2$indexVariant_trait2.t1d_beta * res_immune2$trait_sign)
 
 
 res_immune2[,c("unique_id","beta.trait2","oddsRatio.trait2","trait_sign")]
 head(res_immune2[,c("unique_id","beta.trait2","oddsRatio.trait2","trait_sign","study.hasSumsStats")])
 head(res_immune2[,c("study.traitReported","study.traitReported.trait2")])
 res_immune2$study.traitReported==res_immune2$study.traitReported.trait2
-res_biomarker2$concordance = getConcordance(res_biomarker2)
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Plot LD between lead variants
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-pdf("ld_with_immune_traits.pdf", width=23, height=7)
-ggplot(res_immune2, aes(x=plotLeadVar, y=ImmuneDisease)) +
+pdf("ld_with_immune_traits.pdf", height=23, width=14)
+ggplot(res_immune2, aes(y=plotLeadVar, x=ImmuneDisease)) +
   geom_tile(aes(fill=overallR2*concordance), alpha=0.5) +
   geom_text(aes(label=sprintf("%.2f", overallR2)), size=3) +
   #scale_fill_brewer(name="R-squared with T1D lead") +
   scale_fill_gradient2(midpoint=0,low="blue",high="red", mid="white") +
-  xlab("T1D Lead Variant") +
-  ylab(" ") +
-  theme(axis.text.x=element_text(angle=90))
+  ylab("T1D Lead Variant") +
+  xlab(" ") +
+  theme(axis.text.x=element_text(angle=90, size=20))
 dev.off()
 
 pdf("ld_with_immune_traits_novel_only.pdf", width=13, height=7)

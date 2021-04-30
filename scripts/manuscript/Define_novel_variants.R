@@ -1,17 +1,26 @@
-
 ### Get GWAS catalog data
-resources = "/Users/Cassie/Box Sync/Projects/MEGA/"
-gwas_cat = read.table(file.path(resources,"gwas-association-downloaded_2020-03-06-EFO_0001359-withChildTraits.tsv"), header=TRUE, sep="\t", comment.char="~")
+#resources = "/Users/Cassie/Box Sync/Projects/MEGA/"
+resources = Sys.getenv('resources')
+#system(paste("wget -N --directory-prefix",resources,"ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2020/08/06/gwas-catalog-associations.tsv"))
+gwas_cat = read.table(file.path(resources,"gwas-catalog-associations.tsv"), header=TRUE, sep="\t", quote="")
 
 ### Get current tables
-current_version="/Users/Cassie/UVA_Dropbox/Dropbox/mega_ng/v1.6"
-mega_res_phase1 = read.csv(file.path(current_version,"sup_tables_all_ST6.csv"), header=TRUE, comment.char="~")
-mega_res_meta = read.table(file.path(current_version,"sup_tables_all_ST8.txt"), header=TRUE, sep="\t", comment.char="~")
+#current_version="/Users/Cassie/UVA_Dropbox/Dropbox/mega_ng/v1.6"
+#mega_res_phase1 = read.csv(file.path(current_version,"sup_tables_ST6.csv"), header=TRUE, comment.char="~")
+#mega_res_meta = read.table(file.path(current_version,"sup_tables_all_ST8.txt"), header=TRUE, sep="\t", comment.char="~")
 
+### Get associated regions tables
+filedir = Sys.getenv('manuscript')
+mega_res_phase1 = read.csv(file.path(filedir,"sup_tables_univariate_fdr0.01.csv"), header=TRUE, comment.char="~")
+mega_res_meta = read.table(file.path(current_version,"sup_tables_conditional_analyses.txt"), header=TRUE, sep="\t", comment.char="~")
 
 ### Filter for true T1D studies
-t1d_studies = c("GCST008377", "GCST005536","GCST001394", "GCST001255", "GCST000539", "GCST000392", "GCST000258","GCST000244","GCST000141","GCST000054", "GCST000054","GCST000043","GCST000038")
-gwas_cat_t1d = gwas_cat[gwas_cat$STUDY.ACCESSION%in%t1d_studies & gwas_cat$P.VALUE<=5e-8,]
+#t1d_studies = c("GCST008377", "GCST005536","GCST001394", "GCST001255", "GCST000539", "GCST000392", "GCST000258","GCST000244","GCST000141","GCST000054", "GCST000054","GCST000043","GCST000038")
+t1d_studies = c(17554300, 17554260, 17632545, 18978792, 18198356, 19430480, 18840781, 21980299, 22293688, 25751624, 31152121)
+gwas_cat_t1d = gwas_cat[gwas_cat$PUBMEDID%in%t1d_studies & gwas_cat$P.VALUE<5e-8,]
+
+### Number of previously T1D-associated regions (where region is defined as a cytoband)
+length(unique(gwas_cat_t1d$REGION))
 
 ### Define regions aroung GWAS Catalog lead snps
 gwas_cat_t1d$CHR_ID[gwas_cat_t1d$CHR_ID=="X"] <- 23
@@ -57,3 +66,7 @@ sum(!merged2$Novel.x == merged2$Novel.y)
 ### Write to file
 write.table(mega_res_phase1, file=file.path(current_version,"sup_tables_all_ST6_updated.txt"), quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
 write.table(mega_res_meta, file=file.path(current_version,"sup_tables_all_ST8_updated.txt"), quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
+
+
+### Define number of unique T1D-associated regions
+gwas_cat_t1d
