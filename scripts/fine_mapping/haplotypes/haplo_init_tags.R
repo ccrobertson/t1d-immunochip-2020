@@ -10,6 +10,7 @@ library(ggplot2)
 library(ggbio)
 library(GUESSFM)
 
+
 extension="final_collection"
 orig<-read.table(file=paste0("/scratch/ji3x/",extension,"_gwas/pmeta_fam_ind_risk_regions_vcf_5pc_diff.txt"),header=T,sep=",",as.is=T)
 orig<-orig[orig$ichip=="yes",]
@@ -166,7 +167,7 @@ l[w,"Allele2"]<-l[w,"d1"]
 #get best guess genotypes:
 dat<-as(dat,"numeric")
 for (i in 1:ncol(dat)){
-dat[,i]<-ifelse(dat[,i]<0.5,0, 
+dat[,i]<-ifelse(dat[,i]<0.5,0,
 ifelse(dat[,i]>=0.5 & dat[,i]<1.5,1,
 ifelse(dat[,i]>=1.5,2,NA)))
 }
@@ -273,7 +274,7 @@ model.mi <- function(dir,df,thr=0.004,maxi=NULL,haps.pattern,
   mi <- as.mira(fits)
   ss <- as.data.frame(summary(pool(mi)))
   null.value=0
-  
+
   rownames(ss)[1] <- paste0("hap",base)
 
   ss$Fq <- tt[sub("hap","",rownames(ss))]
@@ -393,10 +394,10 @@ m<-do.call("rbind",m)
 labs<-c(round(m$Fq/100,3))
 xs<-c(1:nrow(m))
 xs<-xs+0.25
-fplot<- ggplot(m, aes(x=as.numeric(hap), y=0)) + 
-  annotate("text", label=labs, x=xs, y=0, size=3, angle=90) + 
-  scale_y_continuous(name="Frequency", breaks=c()) + theme_minimal() + 
-  theme(axis.title.y=element_text(angle=90, size=10, vjust=0.5),panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+fplot<- ggplot(m, aes(x=as.numeric(hap), y=0)) +
+  annotate("text", label=labs, x=xs, y=0, size=3, angle=90) +
+  scale_y_continuous(name="Frequency", breaks=c()) + theme_minimal() +
+  theme(axis.title.y=element_text(angle=90, size=10, vjust=0.5),panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   geom_vline(xintercept=vlines,colour="grey")
 
 #fplot<- ggplot(m, aes(x=(as.numeric(hap)+0.25), ymin=0, ymax=Fq/100, colour=out)) +
