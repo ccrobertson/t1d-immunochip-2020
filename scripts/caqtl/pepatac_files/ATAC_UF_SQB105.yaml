@@ -1,0 +1,20 @@
+name: ATAC_UF_SQB105 
+
+metadata:
+  sample_annotation: ATAC_UF_SQB105.csv
+  output_dir: "output"
+  pipeline_interfaces: "~/software/pepatac/pipeline_interface.yaml"
+        
+derived_columns: [read1, read2]
+
+data_sources:
+  R1: "fastq_files_combined/{sample_name}_R1.fastq.gz"
+  R2: "fastq_files_combined/{sample_name}_R2.fastq.gz"
+
+implied_columns:
+  organism:
+    human:
+      genome: hg38
+      macs_genome_size: hs
+      prealignments: rCRSd human_repeats
+      
