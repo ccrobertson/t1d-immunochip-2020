@@ -1,5 +1,5 @@
 
-The file all_univariable_dens_biorxiv.txt.gz includes all summary statistics for association with T1D accompanying [Robertson, Inshaw, et al (2020)](https://www.biorxiv.org/content/10.1101/2020.06.19.158071v1)
+The file all_univariable_dens_biorxiv.csv.gz includes all summary statistics for association with T1D accompanying [Robertson, Inshaw, et al (2020)](https://www.biorxiv.org/content/10.1101/2020.06.19.158071v1)
 
 ## Explanation of columns in summary statistics download
 
